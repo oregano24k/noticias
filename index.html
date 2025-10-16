@@ -18,6 +18,19 @@
         #progress-bar {
             transition: width 0.3s ease-in-out;
         }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .article-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800 antialiased">
@@ -94,7 +107,7 @@
         }
 
         function populateYears() {
-            const currentYear = 2025;
+            const currentYear = new Date().getFullYear();
             for (let i = currentYear; i >= currentYear - 5; i--) {
                 const option = document.createElement('option');
                 option.value = i;
@@ -107,9 +120,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             populateMonths();
             populateYears();
-            // Establecer valores predeterminados para Octubre de 2025
-            monthSelect.value = 10;
-            yearSelect.value = 2025;
+            // Establecer valores predeterminados para el mes y año actual
+            const now = new Date();
+            monthSelect.value = now.getMonth() + 1;
+            yearSelect.value = now.getFullYear();
         });
 
         function extractJson(text) {
@@ -141,7 +155,8 @@
         }
 
         async function getNews(company) {
-            if (activeCompany === company) return;
+            // No permitir una nueva búsqueda si una ya está activa
+            if (activeCompany === company && !progressBarContainer.classList.contains('hidden')) return;
             
             activeCompany = company;
             updateActiveButton(company);
@@ -219,12 +234,21 @@
             }
 
             const articlesHtml = articles.map(article => `
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4 transform hover:scale-[1.02] transition-transform duration-300 ease-out shadow-sm">
-                    <p class="text-gray-800 mb-4">${article.resumen}</p>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <span class="font-semibold mr-2">${article.fuente}</span>
-                        <span>-</span>
-                        <span class="ml-2">${article.fecha}</span>
+                <div class="article-card bg-white border border-gray-200 rounded-lg p-6 mb-4 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <p class="text-gray-700 text-base leading-relaxed mb-5">${article.resumen}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-200">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3h2m-4 3H9m-4 3h2m4 3h2m-4 3H9m8-3h2m-4 3h2m-4 3h2m-4 3h2" />
+                            </svg>
+                            <span class="font-bold">${article.fuente}</span>
+                        </div>
+                        <div class="flex items-center">
+                             <svg class="w-4 h-4 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>${article.fecha}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
